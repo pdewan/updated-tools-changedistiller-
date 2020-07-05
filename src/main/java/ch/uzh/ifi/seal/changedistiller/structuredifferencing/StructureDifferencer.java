@@ -120,13 +120,29 @@ public class StructureDifferencer {
             allSet.add(node);
             rightSet.put(node, node);
         }
+        boolean aFoundChange = false;
         for (StructureNode node : allSet) {
             StructureNode leftChild = leftSet.get(node);
             StructureNode rightChild = rightSet.get(node);
             StructureDiffNode diff = traverse(leftChild, rightChild);
             if (diff != null) {
                 root.addChild(diff);
+                if (diff.hasChildren()) {
+                	aFoundChange = true;
+                }
             }
+        }
+        if (!aFoundChange) {
+        	System.err.println("empty root");
+        	if (leftChildren.length == 1 && rightChildren.length == 1) {
+        		if (leftChildren[0].isClassOrInterface() && rightChildren[0].isClassOrInterface()) {
+        			StructureDiffNode diff = traverse(leftChildren[0], rightChildren[0]);
+                    if (diff != null) {
+                        root.addChild(diff);
+                        
+                    }
+        		}
+        	}
         }
         return root;
     }
