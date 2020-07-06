@@ -104,11 +104,39 @@ public class StructureDifferencer {
         }
         return root;
     }
+    protected boolean isTypeRefactor (StructureDiffNode root) {
+    	 return isTypeRefactor(root, getChildren(root.getLeft()), getChildren(root.getRight()));
+    }
+
+    protected boolean isTypeRefactor (StructureDiffNode root,
+            StructureNode[] leftChildren,
+            StructureNode[] rightChildren) {
+    	if (leftChildren.length == 1 && rightChildren.length == 1) {
+    		return 
+    				leftChildren[0].isClassOrInterface() && 
+    				rightChildren[0].isClassOrInterface() &&
+    				!(leftChildren[0].getName().equals(rightChildren[0].getName()));
+
+    		}
+    	
+    		
+    	return false;
+    }
 
     private StructureDiffNode traverseChildren(
             StructureDiffNode root,
             StructureNode[] leftChildren,
             StructureNode[] rightChildren) {
+    	
+    	if (isTypeRefactor(root, leftChildren, rightChildren)) {
+    		StructureDiffNode diff = traverse(leftChildren[0], rightChildren[0]);
+          if (diff != null) {
+//        	  diff.setDiffType(DiffType.CHANGE);
+              root.addChild(diff);
+              
+          }
+          return root;
+    	}
         Set<StructureNode> allSet = new HashSet<StructureNode>(20);
         Map<StructureNode, StructureNode> leftSet = new HashMap<StructureNode, StructureNode>(10);
         Map<StructureNode, StructureNode> rightSet = new HashMap<StructureNode, StructureNode>(10);
@@ -120,30 +148,31 @@ public class StructureDifferencer {
             allSet.add(node);
             rightSet.put(node, node);
         }
-        boolean aFoundChange = false;
+//        boolean aFoundChange = false;
         for (StructureNode node : allSet) {
             StructureNode leftChild = leftSet.get(node);
             StructureNode rightChild = rightSet.get(node);
             StructureDiffNode diff = traverse(leftChild, rightChild);
+            
             if (diff != null) {
                 root.addChild(diff);
-                if (diff.hasChildren()) {
-                	aFoundChange = true;
-                }
+//                if (diff.hasChildren()) {
+//                	aFoundChange = true;
+//                }
             }
         }
-        if (!aFoundChange) {
-        	System.err.println("empty root");
-        	if (leftChildren.length == 1 && rightChildren.length == 1) {
-        		if (leftChildren[0].isClassOrInterface() && rightChildren[0].isClassOrInterface()) {
-        			StructureDiffNode diff = traverse(leftChildren[0], rightChildren[0]);
-                    if (diff != null) {
-                        root.addChild(diff);
-                        
-                    }
-        		}
-        	}
-        }
+//        if (!aFoundChange) {
+//        	System.err.println("empty root");
+//        	if (leftChildren.length == 1 && rightChildren.length == 1) {
+//        		if (leftChildren[0].isClassOrInterface() && rightChildren[0].isClassOrInterface()) {
+//        			StructureDiffNode diff = traverse(leftChildren[0], rightChildren[0]);
+//                    if (diff != null) {
+//                        root.addChild(diff);
+//                        
+//                    }
+//        		}
+//        	}
+//        }
         return root;
     }
 
